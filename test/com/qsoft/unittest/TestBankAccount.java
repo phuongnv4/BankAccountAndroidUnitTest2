@@ -3,7 +3,6 @@ package com.qsoft.unittest;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -105,5 +104,26 @@ public class TestBankAccount extends TestCase {
 		verify(bankAccountDAO).getListTransactions(
 				bAccountDto.getAccountNumber());
 	}
+
+	// 8
+	public void testGetTransactionsOccurred2() {
+
+		bAccount.getTransactionsOccurred(bAccountDto.getAccountNumber(), 1L, 5L);
+
+		verify(bankAccountDAO).getListTransactions(
+				bAccountDto.getAccountNumber(), 1L, 5L);
+
+	}
+	// 9
+		public void testGetNTransaction() {
+			ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
+					.forClass(BankAccountDTO.class);
+			ArgumentCaptor<Integer> n = ArgumentCaptor.forClass(Integer.class);
+			bAccount.getNTransactions(bAccountDto, 20);
+
+			verify(bankAccountDAO).getNTransactions(argumentDTO.capture(),
+					n.capture());
+			assertEquals(20, n.getValue().intValue());
+		}
 
 }

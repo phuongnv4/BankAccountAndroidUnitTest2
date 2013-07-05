@@ -37,4 +37,13 @@ public class BankAccount {
 		bankAccountDAO.getListTransactions(accountNumber);
 	}
 
+	public void getTransactionsOccurred(String accountNumber, long l, long m) {
+		bankAccountDAO.getListTransactions(accountNumber,l,m);
+		
+	}
+
+	public void getNTransactions(BankAccountDTO bAccountDto, int i) {
+		bankAccountDAO.getNTransactions(bAccountDto, i);
+	}
+
 }
