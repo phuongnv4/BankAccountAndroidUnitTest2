@@ -46,4 +46,9 @@ public class BankAccount {
 		bankAccountDAO.getNTransactions(bAccountDto, i);
 	}
 
+	public BankAccountDTO getAccountByNumber(String accountNumber) {
+		// TODO Auto-generated method stub
+		return bankAccountDAO.getAccount(accountNumber);
+	}
+
 }

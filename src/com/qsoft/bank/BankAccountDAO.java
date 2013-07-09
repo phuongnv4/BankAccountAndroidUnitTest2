@@ -26,4 +26,9 @@ public class BankAccountDAO {
 
 	}
 
+	public BankAccountDTO getAccount(String accountNumber) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

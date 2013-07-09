@@ -3,6 +3,7 @@ package com.qsoft.unittest;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -36,15 +37,14 @@ public class TestBankAccount extends TestCase {
 	// 2
 	public void testGetAccount() {
 
-		ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
-				.forClass(BankAccountDTO.class);
+		when(bankAccountDAO.getAccount("123456789")).thenReturn(bAccountDto);
 
-		verify(bankAccountDAO).save(argumentDTO.capture(),
-				argumentTimeStamp.capture());
-		assertEquals(0.0, argumentDTO.getAllValues().get(0).getBalance(), 0.01);
-		assertEquals("123456789", argumentDTO.getAllValues().get(0)
-				.getAccountNumber());
-
+		BankAccountDTO bAccountDto1 = bAccount.getAccountByNumber("123456789");
+		
+		verify(bankAccountDAO).getAccount("123456789");
+		
+		assertEquals(bAccountDto1.getAccountNumber(),
+				bAccountDto.getAccountNumber());
 	}
 
 	// 3
@@ -114,19 +114,20 @@ public class TestBankAccount extends TestCase {
 				bAccountDto.getAccountNumber(), 1L, 5L);
 
 	}
-	// 9
-		public void testGetNTransaction() {
-			ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
-					.forClass(BankAccountDTO.class);
-			ArgumentCaptor<Integer> n = ArgumentCaptor.forClass(Integer.class);
-			bAccount.getNTransactions(bAccountDto, 20);
 
-			verify(bankAccountDAO).getNTransactions(argumentDTO.capture(),
-					n.capture());
-			assertEquals(20, n.getValue().intValue());
-		}
-		
-		//10 
-		//refactor code
+	// 9
+	public void testGetNTransaction() {
+		ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
+				.forClass(BankAccountDTO.class);
+		ArgumentCaptor<Integer> n = ArgumentCaptor.forClass(Integer.class);
+		bAccount.getNTransactions(bAccountDto, 20);
+
+		verify(bankAccountDAO).getNTransactions(argumentDTO.capture(),
+				n.capture());
+		assertEquals(20, n.getValue().intValue());
+	}
+
+	// 10
+	// refactor code
 
 }
