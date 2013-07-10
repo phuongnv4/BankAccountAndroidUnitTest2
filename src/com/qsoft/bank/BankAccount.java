@@ -1,17 +1,24 @@
 package com.qsoft.bank;
 
+import java.util.Calendar;
+
 public class BankAccount {
+	static Calendar calendar;
 	private BankAccountDAO bankAccountDAO;
 
-	public BankAccountDTO openAccount(String accountNumber, long l) {
+	public BankAccountDTO openAccount(String accountNumber) {
 		BankAccountDTO bankAccountDTO = new BankAccountDTO();
 		bankAccountDTO.setAccountNumber(accountNumber);
-		bankAccountDAO.save(bankAccountDTO, l);
+		bankAccountDAO.save(bankAccountDTO, calendar.getTimeInMillis());
 		return bankAccountDTO;
 	}
 
 	public void setDao(BankAccountDAO bankAccountDAO) {
 		this.bankAccountDAO = bankAccountDAO;
+	}
+
+	public void setCalendar(Calendar calendar) {
+		this.calendar = calendar;
 	}
 
 	public void deposit(BankAccountDTO bAccountDto, int amount,
@@ -38,8 +45,8 @@ public class BankAccount {
 	}
 
 	public void getTransactionsOccurred(String accountNumber, long l, long m) {
-		bankAccountDAO.getListTransactions(accountNumber,l,m);
-		
+		bankAccountDAO.getListTransactions(accountNumber, l, m);
+
 	}
 
 	public void getNTransactions(BankAccountDTO bAccountDto, int i) {
