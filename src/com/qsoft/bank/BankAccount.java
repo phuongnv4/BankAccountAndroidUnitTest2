@@ -24,7 +24,7 @@ public class BankAccount {
 	public void deposit(BankAccountDTO bAccountDto, int amount,
 			String description) {
 		bAccountDto.setBalance(amount + bAccountDto.getBalance());
-		bankAccountDAO.save(bAccountDto, 0L);
+		bankAccountDAO.save(bAccountDto, calendar.getTimeInMillis());
 	}
 
 	public void deposit(BankAccountDTO bAccountDto, int amount,

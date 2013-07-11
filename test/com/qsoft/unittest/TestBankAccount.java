@@ -63,36 +63,49 @@ public class TestBankAccount extends TestCase {
 				bAccountDto.getAccountNumber());
 	}
 
-	// // 3
-	// public void testDeposit() {
-	// ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
-	// .forClass(BankAccountDTO.class);
-	//
-	// bAccount.deposit(bAccountDto, 10, "phuongnv save money", 0L);
-	// verify(bankAccountDAO, times(2)).save(argumentDTO.capture(),
-	// argumentTimeStamp.capture());
-	//
-	// List<BankAccountDTO> savedAccountRecords = argumentDTO.getAllValues();
-	//
-	// assertEquals(10, savedAccountRecords.get(1).getBalance(), 0.001);
-	//
-	// assertEquals(bAccountDto.getAccountNumber(), savedAccountRecords.get(1)
-	// .getAccountNumber());
-	//
-	// }
-	//
-	// // 4
-	// public void testDepositWithTimeStamp() {
-	// ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
-	// .forClass(BankAccountDTO.class);
-	//
-	// bAccount.deposit(bAccountDto, 10, "phuongnv save money", 1L);
-	// verify(bankAccountDAO, times(2)).save(argumentDTO.capture(),
-	// argumentTimeStamp.capture());
-	//
-	// assertEquals(1L, argumentTimeStamp.getAllValues().get(1).longValue());
-	// }
-	//
+	// 3
+	public void testDeposit() {
+		ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
+				.forClass(BankAccountDTO.class);
+
+		when(bankAccountDAO.getAccount("0123456789")).thenReturn(bAccountDto);
+
+		ArgumentCaptor<Long> timeStempCaptor = ArgumentCaptor
+				.forClass(Long.class);
+		Long nowTime = System.currentTimeMillis();
+		when(mockCalendar.getTimeInMillis()).thenReturn(nowTime);
+
+		bAccount.deposit(bAccountDto, 10, "phuongnv save money");
+
+		verify(bankAccountDAO, times(2)).save(argumentDTO.capture(),
+				timeStempCaptor.capture());
+
+		List<BankAccountDTO> savedAccountRecords = argumentDTO.getAllValues();
+
+		assertEquals(10, savedAccountRecords.get(1).getBalance(), 0.001);
+		assertEquals(timeStempCaptor.getValue(), nowTime);
+		assertEquals(bAccountDto.getAccountNumber(), savedAccountRecords.get(1)
+				.getAccountNumber());
+
+	}
+
+	// 4
+	public void testDepositWithTimeStamp() {
+		ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
+				.forClass(BankAccountDTO.class);
+
+		when(bankAccountDAO.getAccount("0123456789")).thenReturn(bAccountDto);
+		Long timeStamp = System.currentTimeMillis();
+		when(mockCalendar.getTimeInMillis()).thenReturn(timeStamp);
+		
+		
+		bAccount.deposit(bAccountDto, 10, "phuongnv save money");
+		verify(bankAccountDAO, times(2)).save(argumentDTO.capture(),
+				argumentTimeStamp.capture());
+		assertEquals(argumentTimeStamp.getValue(), timeStamp);
+		
+	}
+
 	// // 5
 	// public void testWithDraw() {
 	// ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
