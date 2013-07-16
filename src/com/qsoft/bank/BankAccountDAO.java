@@ -1,34 +1,18 @@
 package com.qsoft.bank;
 
-import java.util.ArrayList;
-
 public class BankAccountDAO {
 
-	public void save(BankAccountDTO bankAccountDTO, long l) {
-		// TODO Auto-generated method stub
+	public void save(BankAccountDTO accountDTO, long timeInMillis) {
 
 	}
 
-	public BankAccountDTO getListTransactions(String accountNumber) {
-		return null;
-
-	}
-
-	public ArrayList<BankAccountDTO> getListTransactions(String accountNumber,
-			long l, long m) {
-
+	public BankAccountDTO getAccountbyAccountNumber(String string) {
 		return null;
 	}
 
-	public ArrayList<BankAccountDTO> getNTransactions(BankAccountDTO capture,
-			Integer capture2) {
-		return null;
+	public void saveTransaction(String accountNumber, double amount,
+			String description, long timeInMillis) {
 
-	}
-
-	public BankAccountDTO getAccount(String accountNumber) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

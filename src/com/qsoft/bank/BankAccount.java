@@ -3,59 +3,43 @@ package com.qsoft.bank;
 import java.util.Calendar;
 
 public class BankAccount {
+	static BankAccountDAO BankAccountDAO;
 	static Calendar calendar;
-	private BankAccountDAO bankAccountDAO;
 
-	public BankAccountDTO openAccount(String accountNumber) {
-		BankAccountDTO bankAccountDTO = new BankAccountDTO();
-		bankAccountDTO.setAccountNumber(accountNumber);
-		bankAccountDAO.save(bankAccountDTO, calendar.getTimeInMillis());
-		return bankAccountDTO;
+	public static BankAccountDTO openAccount(String accountNumber) {
+		BankAccountDTO accountDTO = new BankAccountDTO(accountNumber, 0.0);
+		BankAccountDAO.save(accountDTO, calendar.getTimeInMillis());
+		return accountDTO;
 	}
 
-	public void setDao(BankAccountDAO bankAccountDAO) {
-		this.bankAccountDAO = bankAccountDAO;
+	public static BankAccountDTO getAccount(String accountNumber) {
+		BankAccountDTO result = BankAccountDAO
+				.getAccountbyAccountNumber(accountNumber);
+		return result;
 	}
 
-	public void setCalendar(Calendar calendar) {
-		this.calendar = calendar;
-	}
-
-	public void deposit(BankAccountDTO bAccountDto, int amount,
+	public static void deposit(String accountNumber, double amount,
 			String description) {
-		bAccountDto.setBalance(amount + bAccountDto.getBalance());
-		bankAccountDAO.save(bAccountDto, calendar.getTimeInMillis());
+		BankAccountDAO.saveTransaction(accountNumber, amount, description,
+				calendar.getTimeInMillis());
+
+		BankAccountDTO accountDTO = getAccount(accountNumber);
+		accountDTO.setBalance(amount);
+		accountDTO.setDescription(description);
+		BankAccountDAO.save(accountDTO, calendar.getTimeInMillis());
 	}
 
-	public void deposit(BankAccountDTO bAccountDto, int amount,
-			String description, long l) {
-		bAccountDto.setBalance(amount + bAccountDto.getBalance());
-		bankAccountDAO.save(bAccountDto, l);
-
-	}
-
-	public void withdraw(BankAccountDTO bAccountDto, int amount,
+	public static void withDraw(String accountNumber, double amount,
 			String description) {
-		bAccountDto.setBalance(amount + bAccountDto.getBalance());
-		bankAccountDAO.save(bAccountDto, 0L);
+		deposit(accountNumber, amount, description);
 	}
 
-	public void getTransactionsOccurred(String accountNumber) {
-		bankAccountDAO.getListTransactions(accountNumber);
+	public static void setBankAccountDAO(BankAccountDAO mockAccountDao) {
+		BankAccountDAO = mockAccountDao;
 	}
 
-	public void getTransactionsOccurred(String accountNumber, long l, long m) {
-		bankAccountDAO.getListTransactions(accountNumber, l, m);
-
-	}
-
-	public void getNTransactions(BankAccountDTO bAccountDto, int i) {
-		bankAccountDAO.getNTransactions(bAccountDto, i);
-	}
-
-	public BankAccountDTO getAccountByNumber(String accountNumber) {
-		// TODO Auto-generated method stub
-		return bankAccountDAO.getAccount(accountNumber);
+	public static void setCalendar(Calendar mockCalendar) {
+		calendar = mockCalendar;
 	}
 
 }

@@ -1,12 +1,12 @@
 package com.qsoft.unittest;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Calendar;
-import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -17,19 +17,14 @@ import com.qsoft.bank.BankAccountDAO;
 import com.qsoft.bank.BankAccountDTO;
 
 public class TestBankAccount extends TestCase {
-	BankAccount bAccount;
-	BankAccountDAO bankAccountDAO;
-	BankAccountDTO bAccountDto;
-	ArgumentCaptor<Long> argumentTimeStamp;
+	private BankAccountDAO mockAccountDao = mock(BankAccountDAO.class);
 	private Calendar mockCalendar = mock(Calendar.class);
 
-	protected void setUp() {
-		bAccount = new BankAccount();
-		bankAccountDAO = mock(BankAccountDAO.class);
-		bAccount.setDao(bankAccountDAO);
-		bAccount.setCalendar(mockCalendar);
-		bAccountDto = bAccount.openAccount("123456789");
-		argumentTimeStamp = ArgumentCaptor.forClass(Long.class);
+	public void setUp() {
+		reset(mockAccountDao);
+		BankAccount.setBankAccountDAO(mockAccountDao);
+		reset(mockCalendar);
+		BankAccount.setCalendar(mockCalendar);
 	}
 
 	// 1
@@ -40,123 +35,134 @@ public class TestBankAccount extends TestCase {
 				.forClass(Long.class);
 		Long nowTime = System.currentTimeMillis();
 		when(mockCalendar.getTimeInMillis()).thenReturn(nowTime);
-		bAccountDto = bAccount.openAccount("123456789");
-		verify(bankAccountDAO, times(2)).save(accountDTOCaptor.capture(),
+
+		BankAccount.openAccount("1234567890");
+
+		verify(mockAccountDao, times(1)).save(accountDTOCaptor.capture(),
 				timeStempCaptor.capture());
 		assertEquals(timeStempCaptor.getValue(), nowTime);
 		assertEquals(accountDTOCaptor.getValue().getBalance(), 0.0, 0.01);
 		assertEquals(accountDTOCaptor.getValue().getAccountNumber(),
-				"123456789");
-
+				"1234567890");
 	}
 
 	// 2
-	public void testGetAccount() {
+	public void testCanGetAccountByAccountNumber() {
+		BankAccountDTO accountDTOPush = BankAccount.openAccount("0123456789");
+		when(mockAccountDao.getAccountbyAccountNumber("0123456789"))
+				.thenReturn(accountDTOPush);
 
-		when(bankAccountDAO.getAccount("123456789")).thenReturn(bAccountDto);
+		BankAccountDTO accountPop = BankAccount.getAccount("0123456789");
 
-		BankAccountDTO bAccountDto1 = bAccount.getAccountByNumber("123456789");
-
-		verify(bankAccountDAO).getAccount("123456789");
-
-		assertEquals(bAccountDto1.getAccountNumber(),
-				bAccountDto.getAccountNumber());
+		verify(mockAccountDao, times(1))
+				.getAccountbyAccountNumber("0123456789");
+		assertEquals(accountPop, accountDTOPush);
 	}
 
 	// 3
-	public void testDeposit() {
-		ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
+	public void testAfterDepositBalanceWillIncrease() {
+		ArgumentCaptor<BankAccountDTO> accountDTOCaptor = ArgumentCaptor
 				.forClass(BankAccountDTO.class);
 
-		when(bankAccountDAO.getAccount("0123456789")).thenReturn(bAccountDto);
+		BankAccountDTO accountDTO = BankAccount.openAccount("0123456789");
+
+		when(mockAccountDao.getAccountbyAccountNumber("0123456789"))
+				.thenReturn(accountDTO);
 
 		ArgumentCaptor<Long> timeStempCaptor = ArgumentCaptor
 				.forClass(Long.class);
 		Long nowTime = System.currentTimeMillis();
 		when(mockCalendar.getTimeInMillis()).thenReturn(nowTime);
 
-		bAccount.deposit(bAccountDto, 10, "phuongnv save money");
+		BankAccount.deposit("0123456789", 200.0, "gui tien");
 
-		verify(bankAccountDAO, times(2)).save(argumentDTO.capture(),
+		verify(mockAccountDao, times(2)).save(accountDTOCaptor.capture(),
 				timeStempCaptor.capture());
 
-		List<BankAccountDTO> savedAccountRecords = argumentDTO.getAllValues();
-
-		assertEquals(10, savedAccountRecords.get(1).getBalance(), 0.001);
 		assertEquals(timeStempCaptor.getValue(), nowTime);
-		assertEquals(bAccountDto.getAccountNumber(), savedAccountRecords.get(1)
-				.getAccountNumber());
 
+		assertEquals(200.0, accountDTOCaptor.getValue().getBalance(), 0.01);
+		assertEquals("0123456789", accountDTOCaptor.getValue()
+				.getAccountNumber());
+		assertEquals("gui tien", accountDTOCaptor.getValue().getDescription());
 	}
 
 	// 4
-	public void testDepositWithTimeStamp() {
-		ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
-				.forClass(BankAccountDTO.class);
-
-		when(bankAccountDAO.getAccount("0123456789")).thenReturn(bAccountDto);
+	public void testAfterDepositTransactionShouldBeSaveToDB() {
+		BankAccountDTO bankAccount = BankAccount.openAccount("0123456789");
+		when(mockAccountDao.getAccountbyAccountNumber("0123456789"))
+				.thenReturn(bankAccount);
 		Long timeStamp = System.currentTimeMillis();
 		when(mockCalendar.getTimeInMillis()).thenReturn(timeStamp);
-		
-		
-		bAccount.deposit(bAccountDto, 10, "phuongnv save money");
-		verify(bankAccountDAO, times(2)).save(argumentDTO.capture(),
-				argumentTimeStamp.capture());
-		assertEquals(argumentTimeStamp.getValue(), timeStamp);
-		
+
+		BankAccount.deposit("0123456789", 200.0, "gui tien");
+
+		verify(mockAccountDao, times(1)).saveTransaction("0123456789", 200.0,
+				"gui tien", timeStamp);
 	}
 
-	// // 5
-	// public void testWithDraw() {
-	// ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
-	// .forClass(BankAccountDTO.class);
-	//
-	// // deposit
-	// bAccount.deposit(bAccountDto, 60, "phuongnv save money");
-	// verify(bankAccountDAO, times(2)).save(argumentDTO.capture(),
-	// argumentTimeStamp.capture());
-	// List<BankAccountDTO> savedAccountRecords = argumentDTO.getAllValues();
-	// assertEquals(60, savedAccountRecords.get(1).getBalance(), 0.001);
-	//
-	// // withdraw
-	// bAccount.withdraw(bAccountDto, -50, "Phuongnv rut tien");
-	// verify(bankAccountDAO, times(3)).save(argumentDTO.capture(),
-	// argumentTimeStamp.capture());
-	// List<BankAccountDTO> withDraw = argumentDTO.getAllValues();
-	// assertEquals(10, withDraw.get(2).getBalance(), 0.001);
-	// }
-	//
-	// // 7
-	// public void testGetTransactionsOccurred() {
-	// //
-	// bAccount.getTransactionsOccurred(bAccountDto.getAccountNumber());
-	// verify(bankAccountDAO).getListTransactions(
-	// bAccountDto.getAccountNumber());
-	// }
-	//
-	// // 8
-	// public void testGetTransactionsOccurred2() {
-	//
-	// bAccount.getTransactionsOccurred(bAccountDto.getAccountNumber(), 1L, 5L);
-	//
-	// verify(bankAccountDAO).getListTransactions(
-	// bAccountDto.getAccountNumber(), 1L, 5L);
-	//
-	// }
-	//
-	// // 9
-	// public void testGetNTransaction() {
-	// ArgumentCaptor<BankAccountDTO> argumentDTO = ArgumentCaptor
-	// .forClass(BankAccountDTO.class);
-	// ArgumentCaptor<Integer> n = ArgumentCaptor.forClass(Integer.class);
-	// bAccount.getNTransactions(bAccountDto, 20);
-	//
-	// verify(bankAccountDAO).getNTransactions(argumentDTO.capture(),
-	// n.capture());
-	// assertEquals(20, n.getValue().intValue());
-	// }
-	//
-	// // 10
-	// // refactor code
+	// 5
+	public void testAfterWithDrawBalanceHasIncrease() {
+		ArgumentCaptor<BankAccountDTO> accountDTOCaptor = ArgumentCaptor
+				.forClass(BankAccountDTO.class);
 
+		BankAccountDTO accountDTO = BankAccount.openAccount("0123456789");
+
+		when(mockAccountDao.getAccountbyAccountNumber("0123456789"))
+				.thenReturn(accountDTO);
+
+		ArgumentCaptor<Long> timeStempCaptor = ArgumentCaptor
+				.forClass(Long.class);
+		Long nowTime = System.currentTimeMillis();
+		when(mockCalendar.getTimeInMillis()).thenReturn(nowTime);
+
+		BankAccount.withDraw("0123456789", 100.0, "gui tien");
+
+		verify(mockAccountDao, times(2)).save(accountDTOCaptor.capture(),
+				timeStempCaptor.capture());
+
+		assertEquals(timeStempCaptor.getValue(), nowTime);
+
+		assertEquals(100.0, accountDTOCaptor.getValue().getBalance(), 0.01);
+
+		assertEquals("0123456789", accountDTOCaptor.getValue()
+				.getAccountNumber());
+
+		assertEquals("gui tien", accountDTOCaptor.getValue().getDescription());
+	}
+
+	// 6
+	public void testAfterWithDrawTransactionShouldBeSaveToDB() {
+		BankAccountDTO bankAccount = BankAccount.openAccount("0123456789");
+
+		when(mockAccountDao.getAccountbyAccountNumber("0123456789"))
+				.thenReturn(bankAccount);
+
+		Long timeStamp = System.currentTimeMillis();
+		when(mockCalendar.getTimeInMillis()).thenReturn(timeStamp);
+
+		BankAccount.withDraw("0123456789", 200.0,
+				"gui tien");
+
+		verify(mockAccountDao, times(1)).saveTransaction("0123456789", 200.0,
+				"gui tien", timeStamp);
+	}
+	// //7
+	// public void testGetListTransactionOccurred() {
+	// BankAccount.getListTransactionOccurred("0123456789");
+	//
+	// verify(mockAccountDao,
+	// times(1)).getListTransactionOccurred("0123456789");
+	// }
+	// //8
+	// public void testGetListTransactionOccurredInTime() {
+	// Long startTime= System.currentTimeMillis();
+	// Long stopTime= startTime+5000000L;
+	//
+	// BankAccount.getListTransactionOccurred("0123456789", startTime,
+	// stopTime);
+	//
+	// verify(mockAccountDao, times(1)).getListTransactionOccurred("0123456789",
+	// startTime, stopTime);
+	// }
 }
