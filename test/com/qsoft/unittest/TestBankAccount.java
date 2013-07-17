@@ -28,6 +28,12 @@ public class TestBankAccount extends TestCase {
 	}
 
 	// 1
+	public void testNewAccountHasZeroBalance() {
+		BankAccountDTO accountDTO = BankAccount.openAccount("1234567890");
+		assertEquals(accountDTO.getBalance(), 0.0, 0.01);
+	}
+
+	// 2
 	public void testOpenAccount() {
 		ArgumentCaptor<BankAccountDTO> accountDTOCaptor = ArgumentCaptor
 				.forClass(BankAccountDTO.class);
@@ -46,7 +52,7 @@ public class TestBankAccount extends TestCase {
 				"1234567890");
 	}
 
-	// 2
+	// 3
 	public void testCanGetAccountByAccountNumber() {
 		BankAccountDTO accountDTOPush = BankAccount.openAccount("0123456789");
 		when(mockAccountDao.getAccountbyAccountNumber("0123456789"))
@@ -59,7 +65,7 @@ public class TestBankAccount extends TestCase {
 		assertEquals(accountPop, accountDTOPush);
 	}
 
-	// 3
+	// 4
 	public void testAfterDepositBalanceWillIncrease() {
 		ArgumentCaptor<BankAccountDTO> accountDTOCaptor = ArgumentCaptor
 				.forClass(BankAccountDTO.class);
@@ -87,7 +93,7 @@ public class TestBankAccount extends TestCase {
 		assertEquals("gui tien", accountDTOCaptor.getValue().getDescription());
 	}
 
-	// 4
+	// 5
 	public void testAfterDepositTransactionShouldBeSaveToDB() {
 		BankAccountDTO bankAccount = BankAccount.openAccount("0123456789");
 		when(mockAccountDao.getAccountbyAccountNumber("0123456789"))
@@ -101,7 +107,7 @@ public class TestBankAccount extends TestCase {
 				"gui tien", timeStamp);
 	}
 
-	// 5
+	// 6
 	public void testAfterWithDrawBalanceHasIncrease() {
 		ArgumentCaptor<BankAccountDTO> accountDTOCaptor = ArgumentCaptor
 				.forClass(BankAccountDTO.class);
@@ -131,7 +137,7 @@ public class TestBankAccount extends TestCase {
 		assertEquals("gui tien", accountDTOCaptor.getValue().getDescription());
 	}
 
-	// 6
+	// 7
 	public void testAfterWithDrawTransactionShouldBeSaveToDB() {
 		BankAccountDTO bankAccount = BankAccount.openAccount("0123456789");
 
@@ -141,28 +147,29 @@ public class TestBankAccount extends TestCase {
 		Long timeStamp = System.currentTimeMillis();
 		when(mockCalendar.getTimeInMillis()).thenReturn(timeStamp);
 
-		BankAccount.withDraw("0123456789", 200.0,
-				"gui tien");
+		BankAccount.withDraw("0123456789", 200.0, "gui tien");
 
 		verify(mockAccountDao, times(1)).saveTransaction("0123456789", 200.0,
 				"gui tien", timeStamp);
 	}
-	// //7
-	// public void testGetListTransactionOccurred() {
-	// BankAccount.getListTransactionOccurred("0123456789");
-	//
-	// verify(mockAccountDao,
-	// times(1)).getListTransactionOccurred("0123456789");
-	// }
-	// //8
-	// public void testGetListTransactionOccurredInTime() {
-	// Long startTime= System.currentTimeMillis();
-	// Long stopTime= startTime+5000000L;
-	//
-	// BankAccount.getListTransactionOccurred("0123456789", startTime,
-	// stopTime);
-	//
-	// verify(mockAccountDao, times(1)).getListTransactionOccurred("0123456789",
-	// startTime, stopTime);
-	// }
+
+	// 8
+	public void testGetListTransactionOccurred() {
+		BankAccount.getListTransactionOccurred("0123456789");
+
+		verify(mockAccountDao, times(1)).getListTransactionOccurred(
+				"0123456789");
+	}
+
+	// 9
+	public void testGetListTransactionOccurredInTime() {
+		Long startTime = System.currentTimeMillis();
+		Long stopTime = startTime + 5000000L;
+
+		BankAccount.getListTransactionOccurred("0123456789", startTime,
+				stopTime);
+
+		verify(mockAccountDao, times(1)).getListTransactionOccurred(
+				"0123456789", startTime, stopTime);
+	}
 }

@@ -1,6 +1,7 @@
 package com.qsoft.bank;
 
 import java.util.Calendar;
+import java.util.List;
 
 public class BankAccount {
 	static BankAccountDAO BankAccountDAO;
@@ -32,6 +33,17 @@ public class BankAccount {
 	public static void withDraw(String accountNumber, double amount,
 			String description) {
 		deposit(accountNumber, amount, description);
+	}
+
+	public static List<TransactionDTO> getListTransactionOccurred(
+			String accountNumber) {
+		return BankAccountDAO.getListTransactionOccurred(accountNumber);
+	}
+
+	public static List<TransactionDTO> getListTransactionOccurred(
+			String accountNumber, Long startTime, Long stopTime) {
+		return BankAccountDAO.getListTransactionOccurred(accountNumber,
+				startTime, stopTime);
 	}
 
 	public static void setBankAccountDAO(BankAccountDAO mockAccountDao) {
